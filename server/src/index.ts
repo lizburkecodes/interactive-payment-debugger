@@ -19,29 +19,60 @@ app.get('/api/health', (_req, res) => {
 
 app.post('/api/debug-payment', async (req, res) => {
   const { scenario } = req.body
-
+  // missing payment_method scenario
   if (scenario === 'missing-payment-method') {
     const requestPayload = {
-        amount: 2000,
-        currency: 'usd',
-        confirm: true,
-        automatic_payment_methods: {
-          enabled: true,
-          allow_redirects: 'never',
-        },
-        // intentionally missing payment_method
-      }
+      amount: 2000,
+      currency: 'usd',
+      confirm: true,
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never',
+      },
+      // intentionally missing payment_method
+    }
     try {
       const paymentIntent = await stripe.paymentIntents.create(requestPayload as any)
 
-    return res.json({
-      request: requestPayload,
-      response: paymentIntent,
-      error: null,
-    })
+      return res.json({
+        request: requestPayload,
+        response: paymentIntent,
+        error: null,
+      })
     } catch (error: any) {
       return res.status(400).json({
         status: 400,
+        request: requestPayload,
+        response: null,
+        error: {
+          type: error.type,
+          message: error.message,
+        },
+      })
+    }
+  }
+
+  // invalid authentication scenario
+  if (scenario === 'invalid-api-key') {
+    const requestPayload = {
+      amount: 2000,
+      currency: 'usd',
+    }
+
+    try {
+      const badStripe = new Stripe('sk_test_invalid_key')
+
+      const paymentIntent = await badStripe.paymentIntents.create(requestPayload as any)
+
+      return res.json({
+        status: 200,
+        request: requestPayload,
+        response: paymentIntent,
+        error: null,
+      })
+    } catch (error: any) {
+      return res.status(401).json({
+        status: 401,
         request: requestPayload,
         response: null,
         error: {

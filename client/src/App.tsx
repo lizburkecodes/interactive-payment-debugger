@@ -12,7 +12,7 @@ function getExpectedStatusCode(selectedScenario: string) {
     return 400
   }
 
-  if (selectedScenario === 'invalid-auth') {
+  if (selectedScenario === 'invalid-api-key') {
     return 401
   }
 
@@ -40,10 +40,11 @@ function getRequestPreview(selectedScenario: string) {
     }
   }
 
-  if (selectedScenario === 'invalid-auth') {
+  if (selectedScenario === 'invalid-api-key') {
     return {
       amount: 2000,
       currency: 'usd',
+      apiKey: 'sk_test_invalid_key',
     }
   }
 
@@ -73,7 +74,7 @@ function getScenarioDescription(selectedScenario: string) {
     return 'This scenario simulates confirming a PaymentIntent without sending a payment method.'
   }
 
-  if (selectedScenario === 'invalid-auth') {
+  if (selectedScenario === 'invalid-api-key') {
     return 'This scenario will simulate a request made with invalid Stripe credentials.'
   }
 
@@ -155,7 +156,7 @@ function App() {
           }}
         >
           <option value="missing-payment-method">Missing required field</option>
-          <option value="invalid-auth">Invalid auth key</option>
+          <option value="invalid-api-key">Invalid API key</option>
           <option value="idempotency">Idempotency issue</option>
           <option value="timeout">Timeout</option>
         </select>
@@ -166,7 +167,8 @@ function App() {
 
       <section className="output-section">
         <h2>Status Code</h2>
-        <pre>{debugResult?.status ?? getExpectedStatusCode(selectedScenario)}</pre>
+        <pre>{debugResult?.status ?? 'NA'}</pre>
+
         <h2>Request</h2>
         <pre>
           {JSON.stringify(
@@ -180,14 +182,14 @@ function App() {
         <pre>
           {debugResult
             ? JSON.stringify(debugResult.response, null, 2)
-            : 'Run this scenario to see the API response.'}
+            : 'Send Request to see the API response.'}
         </pre>
 
         <h2>Error</h2>
         <pre>
           {debugResult
             ? JSON.stringify(debugResult.error, null, 2)
-            : 'Run this scenario to see the resulting error.'}
+            : 'Send Request to see the resulting error.'}
         </pre>
       </section>
     </div>
