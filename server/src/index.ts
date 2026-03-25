@@ -131,6 +131,27 @@ app.post('/api/debug-payment', async (req, res) => {
     }
   }
 
+  // timeout scenario
+  if (scenario === 'timeout') {
+    const requestPayload = {
+      amount: 2000,
+      currency: 'usd',
+      simulatedDelayMs: 5000,
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+
+    return res.status(504).json({
+      status: 504,
+      request: requestPayload,
+      response: null,
+      error: {
+        type: 'UpstreamTimeoutError',
+        message: 'The upstream payment service did not respond within the expected time.',
+      },
+    })
+  }
+
   return res.json({
     request: {
       scenario,

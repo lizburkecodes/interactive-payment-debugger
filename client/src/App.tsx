@@ -7,25 +7,6 @@ type DebugResult = {
   response: unknown
   error: unknown
 }
-function getExpectedStatusCode(selectedScenario: string) {
-  if (selectedScenario === 'missing-payment-method') {
-    return 400
-  }
-
-  if (selectedScenario === 'invalid-api-key') {
-    return 401
-  }
-
-  if (selectedScenario === 'idempotency') {
-    return 409
-  }
-
-  if (selectedScenario === 'timeout') {
-    return 504
-  }
-
-  return null
-}
 
 function getRequestPreview(selectedScenario: string) {
   if (selectedScenario === 'missing-payment-method') {
@@ -71,7 +52,7 @@ function getRequestPreview(selectedScenario: string) {
 
 function getScenarioDescription(selectedScenario: string) {
   if (selectedScenario === 'missing-payment-method') {
-    return 'This scenario simulates confirming a PaymentIntent without sending a payment method.'
+    return 'This scenario simulates confirming a Payment Intent without sending a payment method.'
   }
 
   if (selectedScenario === 'invalid-api-key') {
@@ -83,7 +64,7 @@ function getScenarioDescription(selectedScenario: string) {
   }
 
   if (selectedScenario === 'timeout') {
-    return 'This scenario simulates a delayed or timed-out upstream payment request.'
+    return 'This scenario simulates a delayed or timed-out upstream payment request. Warning: this will intentionally delay the response for several seconds to demonstrate timeout handling.'
   }
 
   return 'Select a scenario to inspect the request and debug behavior.'
@@ -162,7 +143,7 @@ function App() {
         </select>
 
         <button type="button" onClick={handleSendRequest}>Send Request</button>
-        <p>{getScenarioDescription(selectedScenario)}</p>
+        <p style={{ marginTop: '1rem' }}>{getScenarioDescription(selectedScenario)}</p>
       </section>
 
       <section className="output-section">
