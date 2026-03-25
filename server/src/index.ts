@@ -31,11 +31,18 @@ app.post('/api/debug-payment', async (req, res) => {
       },
       // intentionally missing payment_method
     }
+
+    const headers = {
+      Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY?.slice(0, 12)}...`,
+      'Content-Type': 'application/json',
+    }
+    
     try {
       const paymentIntent = await stripe.paymentIntents.create(requestPayload as any)
 
       return res.json({
         request: requestPayload,
+        headers,
         response: paymentIntent,
         error: null,
       })
@@ -43,6 +50,7 @@ app.post('/api/debug-payment', async (req, res) => {
       return res.status(400).json({
         status: 400,
         request: requestPayload,
+        headers,
         response: null,
         error: {
           type: error.type,

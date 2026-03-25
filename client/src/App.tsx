@@ -4,8 +4,42 @@ import './App.css'
 type DebugResult = {
   status?: number
   request: unknown
+  headers?: unknown
   response: unknown
   error: unknown
+}
+
+function getHeadersPreview(selectedScenario: string) {
+  if (selectedScenario === 'missing-payment-method') {
+    return {
+      Authorization: 'Bearer sk_test_1234...',
+      'Content-Type': 'application/json',
+    }
+  }
+
+  if (selectedScenario === 'invalid-api-key') {
+    return {
+      Authorization: 'Bearer sk_test_invalid_key',
+      'Content-Type': 'application/json',
+    }
+  }
+
+  if (selectedScenario === 'idempotency') {
+    return {
+      Authorization: 'Bearer sk_test_1234...',
+      'Content-Type': 'application/json',
+      'Idempotency-Key': 'demo-key-123',
+    }
+  }
+
+  if (selectedScenario === 'timeout') {
+    return {
+      Authorization: 'Bearer sk_test_1234...',
+      'Content-Type': 'application/json',
+    }
+  }
+
+  return {}
 }
 
 function getRequestPreview(selectedScenario: string) {
@@ -169,6 +203,14 @@ function App() {
       </section>
 
       <section className="output-section">
+        <h2>Headers</h2>
+        <pre>
+          {JSON.stringify(
+            debugResult?.headers ?? getHeadersPreview(selectedScenario),
+            null,
+            2
+          )}
+        </pre>
         <h2>Status Code</h2>
         <pre>{debugResult?.status ?? 'NA'}</pre>
 
