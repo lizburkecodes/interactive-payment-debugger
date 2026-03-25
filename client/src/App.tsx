@@ -2,14 +2,95 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 type DebugResult = {
+  status?: number
   request: unknown
   response: unknown
   error: unknown
 }
+function getExpectedStatusCode(selectedScenario: string) {
+  if (selectedScenario === 'missing-payment-method') {
+    return 400
+  }
+
+  if (selectedScenario === 'invalid-auth') {
+    return 401
+  }
+
+  if (selectedScenario === 'idempotency') {
+    return 409
+  }
+
+  if (selectedScenario === 'timeout') {
+    return 504
+  }
+
+  return null
+}
+
+function getRequestPreview(selectedScenario: string) {
+  if (selectedScenario === 'missing-payment-method') {
+    return {
+      amount: 2000,
+      currency: 'usd',
+      confirm: true,
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never',
+      },
+    }
+  }
+
+  if (selectedScenario === 'invalid-auth') {
+    return {
+      amount: 2000,
+      currency: 'usd',
+    }
+  }
+
+  if (selectedScenario === 'idempotency') {
+    return {
+      amount: 2000,
+      currency: 'usd',
+      confirm: true,
+      payment_method: 'pm_card_visa',
+      idempotencyKey: 'demo-key-123',
+    }
+  }
+
+  if (selectedScenario === 'timeout') {
+    return {
+      amount: 2000,
+      currency: 'usd',
+      simulatedDelayMs: 5000,
+    }
+  }
+
+  return {}
+}
+
+function getScenarioDescription(selectedScenario: string) {
+  if (selectedScenario === 'missing-payment-method') {
+    return 'This scenario simulates confirming a PaymentIntent without sending a payment method.'
+  }
+
+  if (selectedScenario === 'invalid-auth') {
+    return 'This scenario will simulate a request made with invalid Stripe credentials.'
+  }
+
+  if (selectedScenario === 'idempotency') {
+    return 'This scenario will demonstrate how reusing an idempotency key can affect request behavior.'
+  }
+
+  if (selectedScenario === 'timeout') {
+    return 'This scenario simulates a delayed or timed-out upstream payment request.'
+  }
+
+  return 'Select a scenario to inspect the request and debug behavior.'
+}
 
 function App() {
   const [message, setMessage] = useState('Loading page...')
-  const [selectedScenario, setSelectedScenario] = useState('missing-field')
+  const [selectedScenario, setSelectedScenario] = useState('missing-payment-method')
   const [debugResult, setDebugResult] = useState<DebugResult | null>(null)
 
   useEffect(() => {
@@ -68,32 +149,46 @@ function App() {
         <select
           id="scenario-select"
           value={selectedScenario}
-          onChange={(e) => setSelectedScenario(e.target.value)}
+          onChange={(e) => {
+            setSelectedScenario(e.target.value)
+            setDebugResult(null)
+          }}
         >
-          <option value="missing-field">Missing required field</option>
+          <option value="missing-payment-method">Missing required field</option>
           <option value="invalid-auth">Invalid auth key</option>
           <option value="idempotency">Idempotency issue</option>
           <option value="timeout">Timeout</option>
         </select>
 
         <button type="button" onClick={handleSendRequest}>Send Request</button>
+        <p>{getScenarioDescription(selectedScenario)}</p>
       </section>
 
       <section className="output-section">
+        <h2>Status Code</h2>
+        <pre>{debugResult?.status ?? getExpectedStatusCode(selectedScenario)}</pre>
         <h2>Request</h2>
-        <pre>{debugResult
-            ? JSON.stringify(debugResult.request, null, 2)
-            : 'No request yet'}</pre>
+        <pre>
+          {JSON.stringify(
+            debugResult?.request ?? getRequestPreview(selectedScenario),
+            null,
+            2
+          )}
+        </pre>
 
         <h2>Response</h2>
-        <pre>{debugResult
+        <pre>
+          {debugResult
             ? JSON.stringify(debugResult.response, null, 2)
-            : 'No response yet'}</pre>
+            : 'Run this scenario to see the API response.'}
+        </pre>
 
         <h2>Error</h2>
-        <pre>{debugResult
+        <pre>
+          {debugResult
             ? JSON.stringify(debugResult.error, null, 2)
-            : 'No error yet'}</pre>
+            : 'Run this scenario to see the resulting error.'}
+        </pre>
       </section>
     </div>
   )

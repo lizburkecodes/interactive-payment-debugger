@@ -1,8 +1,11 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import Stripe from 'stripe'
 
 dotenv.config()
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -14,21 +17,39 @@ app.get('/api/health', (_req, res) => {
   res.json({ message: 'Server is running' })
 })
 
-app.post('/api/debug-payment', (req, res) => {
+app.post('/api/debug-payment', async (req, res) => {
   const { scenario } = req.body
 
-  if (scenario === 'missing-field') {
-    return res.status(400).json({
-      request: {
+  if (scenario === 'missing-payment-method') {
+    const requestPayload = {
         amount: 2000,
         currency: 'usd',
-      },
-      response: null,
-      error: {
-        type: 'validation_error',
-        message: 'Missing required field: payment_method',
-      },
+        confirm: true,
+        automatic_payment_methods: {
+          enabled: true,
+          allow_redirects: 'never',
+        },
+        // intentionally missing payment_method
+      }
+    try {
+      const paymentIntent = await stripe.paymentIntents.create(requestPayload as any)
+
+    return res.json({
+      request: requestPayload,
+      response: paymentIntent,
+      error: null,
     })
+    } catch (error: any) {
+      return res.status(400).json({
+        status: 400,
+        request: requestPayload,
+        response: null,
+        error: {
+          type: error.type,
+          message: error.message,
+        },
+      })
+    }
   }
 
   return res.json({
