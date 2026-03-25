@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 
+type DebugResult = {
+  request: unknown
+  response: unknown
+  error: unknown
+}
+
 function App() {
   const [message, setMessage] = useState('Loading page...')
   const [selectedScenario, setSelectedScenario] = useState('missing-field')
+  const [debugResult, setDebugResult] = useState<DebugResult | null>(null)
 
   useEffect(() => {
     const fetchHealth = async () => {
@@ -19,6 +26,30 @@ function App() {
 
     fetchHealth()
   }, [])
+
+   const handleSendRequest = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/debug-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ scenario: selectedScenario }),
+      })
+
+      const data = await response.json()
+      setDebugResult(data)
+    } catch (error) {
+      console.error(error)
+      setDebugResult({
+        request: null,
+        response: null,
+        error: {
+          message: 'Failed to reach backend',
+        },
+      })
+    }
+  }
 
   return (
     <div className="app">
@@ -45,18 +76,24 @@ function App() {
           <option value="timeout">Timeout</option>
         </select>
 
-        <button type="button">Send Request</button>
+        <button type="button" onClick={handleSendRequest}>Send Request</button>
       </section>
 
       <section className="output-section">
         <h2>Request</h2>
-        <pre>{`{}`}</pre>
+        <pre>{debugResult
+            ? JSON.stringify(debugResult.request, null, 2)
+            : 'No request yet'}</pre>
 
         <h2>Response</h2>
-        <pre>{`No response yet`}</pre>
+        <pre>{debugResult
+            ? JSON.stringify(debugResult.response, null, 2)
+            : 'No response yet'}</pre>
 
         <h2>Error</h2>
-        <pre>{`No error yet`}</pre>
+        <pre>{debugResult
+            ? JSON.stringify(debugResult.error, null, 2)
+            : 'No error yet'}</pre>
       </section>
     </div>
   )
