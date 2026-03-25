@@ -181,8 +181,10 @@ function App() {
         <h2>Response</h2>
         <pre>
           {debugResult
-            ? JSON.stringify(debugResult.response, null, 2)
-            : 'Send Request to see the API response.'}
+            ? debugResult.response === null
+              ? 'No response body returned.'
+              : JSON.stringify(debugResult.response, null, 2)
+            : 'Run this scenario to see the API response.'}
         </pre>
 
         <h2>Error</h2>

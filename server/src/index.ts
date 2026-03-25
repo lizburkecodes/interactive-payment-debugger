@@ -83,6 +83,54 @@ app.post('/api/debug-payment', async (req, res) => {
     }
   }
 
+  // idempotency issue scenario
+  if (scenario === 'idempotency') {
+    const idempotencyKey = 'demo-key-123'
+
+    const firstRequestPayload = {
+      amount: 2000,
+      currency: 'usd',
+      confirm: false,
+    }
+
+    const secondRequestPayload = {
+      amount: 3000,
+      currency: 'usd',
+      confirm: false,
+    }
+
+    try {
+      await stripe.paymentIntents.create(firstRequestPayload as any, {
+        idempotencyKey,
+      })
+
+      const secondResponse = await stripe.paymentIntents.create(secondRequestPayload as any, {
+        idempotencyKey,
+      })
+
+      return res.json({
+        status: 200,
+        request: secondRequestPayload,
+        response: secondResponse,
+        error: null,
+      })
+    } catch (error: any) {
+      return res.status(409).json({
+        status: 409,
+        request: {
+          firstRequest: firstRequestPayload,
+          secondRequest: secondRequestPayload,
+          idempotencyKey,
+        },
+        response: null,
+        error: {
+          type: error.type,
+          message: error.message,
+        },
+      })
+    }
+  }
+
   return res.json({
     request: {
       scenario,
