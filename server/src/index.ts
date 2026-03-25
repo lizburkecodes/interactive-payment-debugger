@@ -36,7 +36,7 @@ app.post('/api/debug-payment', async (req, res) => {
       Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY?.slice(0, 12)}...`,
       'Content-Type': 'application/json',
     }
-    
+
     try {
       const paymentIntent = await stripe.paymentIntents.create(requestPayload as any)
 
@@ -67,6 +67,11 @@ app.post('/api/debug-payment', async (req, res) => {
       currency: 'usd',
     }
 
+    const headers = {
+      Authorization: 'Bearer sk_test_invalid_key',
+      'Content-Type': 'application/json',
+    }
+
     try {
       const badStripe = new Stripe('sk_test_invalid_key')
 
@@ -75,6 +80,7 @@ app.post('/api/debug-payment', async (req, res) => {
       return res.json({
         status: 200,
         request: requestPayload,
+        headers,
         response: paymentIntent,
         error: null,
       })
@@ -83,6 +89,7 @@ app.post('/api/debug-payment', async (req, res) => {
         status: 401,
         request: requestPayload,
         response: null,
+        headers,
         error: {
           type: error.type,
           message: error.message,
@@ -94,6 +101,11 @@ app.post('/api/debug-payment', async (req, res) => {
   // idempotency issue scenario
   if (scenario === 'idempotency') {
     const idempotencyKey = 'demo-key-123'
+    const headers = {
+      Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY?.slice(0, 12)}...`,
+      'Content-Type': 'application/json',
+      'Idempotency-Key': idempotencyKey,
+    }
 
     const firstRequestPayload = {
       amount: 2000,
@@ -119,6 +131,7 @@ app.post('/api/debug-payment', async (req, res) => {
       return res.json({
         status: 200,
         request: secondRequestPayload,
+        headers,
         response: secondResponse,
         error: null,
       })
@@ -130,6 +143,7 @@ app.post('/api/debug-payment', async (req, res) => {
           secondRequest: secondRequestPayload,
           idempotencyKey,
         },
+        headers,
         response: null,
         error: {
           type: error.type,

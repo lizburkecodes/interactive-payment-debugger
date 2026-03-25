@@ -203,16 +203,6 @@ function App() {
       </section>
 
       <section className="output-section">
-        <h2>Headers</h2>
-        <pre>
-          {JSON.stringify(
-            debugResult?.headers ?? getHeadersPreview(selectedScenario),
-            null,
-            2
-          )}
-        </pre>
-        <h2>Status Code</h2>
-        <pre>{debugResult?.status ?? 'NA'}</pre>
 
         <h2>Request Payload</h2>
         <pre>
@@ -222,6 +212,18 @@ function App() {
             2
           )}
         </pre>
+
+        <h2>Headers</h2>
+        <pre>
+          {JSON.stringify(
+            debugResult?.headers ?? getHeadersPreview(selectedScenario),
+            null,
+            2
+          )}
+        </pre>
+        
+        <h2>Status Code</h2>
+        <pre>{debugResult?.status ?? 'NA'}</pre>
 
         <h2>Response</h2>
         <pre>
