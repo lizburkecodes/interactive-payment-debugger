@@ -176,8 +176,19 @@ function App() {
     <div className="app">
       <h1>Interactive Payment API Debugger</h1>
       <p>
-        This interactive demo simulates real-world payment integration failures.
-        Select a scenario to inspect the request, analyze the response, and see how to debug the issue.
+        This interactive demo simulates real-world payment integration failures utilizing the Stripe API.
+        Each scenario demonstrates a different class of issue — validation errors, authentication failures, idempotency conflicts, and timeouts — along with the exact request, headers, and response used to debug them.
+      </p>
+
+      <p>
+        Reference:{" "}
+        <a
+          href="https://docs.stripe.com/api?lang=node"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Stripe API Docs
+        </a>
       </p>
 
       <section className="controls-section">
@@ -221,7 +232,7 @@ function App() {
             2
           )}
         </pre>
-        
+
         <h2>Status Code</h2>
         <pre>{debugResult?.status ?? 'NA'}</pre>
 
@@ -243,7 +254,6 @@ function App() {
 
         <h2>Debug Explanation</h2>
         <pre>{getDebugExplanation(selectedScenario, debugResult)}</pre>
-
 
         <section className="status-section">
         <h2>Backend Status</h2>
