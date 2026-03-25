@@ -70,6 +70,30 @@ function getScenarioDescription(selectedScenario: string) {
   return 'Select a scenario to inspect the request and debug behavior.'
 }
 
+function getDebugExplanation(selectedScenario: string, debugResult: DebugResult | null) {
+  if (!debugResult) {
+    return 'Run a scenario to see how to investigate the issue.'
+  }
+
+  if (selectedScenario === 'missing-payment-method') {
+    return 'This failure happens because the payment was confirmed before a payment method was attached. Confirm whether the frontend collected a payment method successfully, if the backend received it, and if the confirmation request included it in the expected format.'
+  }
+
+  if (selectedScenario === 'invalid-api-key') {
+    return 'This error message points to an authentication problem rather than a bad request payload. Verify which API key is being used, confirm whether the environment is test or live mode, and make sure the backend is loading the correct credentials from environment variables.'
+  }
+
+  if (selectedScenario === 'idempotency') {
+    return 'This failure happens when the same idempotency key is reused for a different request. Confirm if retry logic is incorrectly reusing keys, whether the request body changed between attempts, and if the client is generating unique keys for distinct operations.'
+  }
+
+  if (selectedScenario === 'timeout') {
+    return 'This error suggests the upstream service took too long to respond. Look at request timing, retry behavior, logs around the outgoing API call, and whether the issue is caused by the provider, the network, or our own timeout settings.'
+  }
+
+  return 'Run a scenario to see how to investigate the issue.'
+}
+
 function App() {
   const [message, setMessage] = useState('Loading page...')
   const [selectedScenario, setSelectedScenario] = useState('missing-payment-method')
@@ -117,12 +141,10 @@ function App() {
   return (
     <div className="app">
       <h1>Interactive Payment API Debugger</h1>
-      <p>Select a scenario and inspect the request/response.</p>
-
-      <section className="status-section">
-        <h2>Backend Status</h2>
-        <p>{message}</p>
-      </section>
+      <p>
+        This interactive demo simulates real-world payment integration failures.
+        Select a scenario to inspect the request, analyze the response, and see how to debug the issue.
+      </p>
 
       <section className="controls-section">
         <h2>Scenario</h2>
@@ -150,7 +172,7 @@ function App() {
         <h2>Status Code</h2>
         <pre>{debugResult?.status ?? 'NA'}</pre>
 
-        <h2>Request</h2>
+        <h2>Request Payload</h2>
         <pre>
           {JSON.stringify(
             debugResult?.request ?? getRequestPreview(selectedScenario),
@@ -174,6 +196,16 @@ function App() {
             ? JSON.stringify(debugResult.error, null, 2)
             : 'Send Request to see the resulting error.'}
         </pre>
+
+        <h2>Debug Explanation</h2>
+        <pre>{getDebugExplanation(selectedScenario, debugResult)}</pre>
+
+
+        <section className="status-section">
+        <h2>Backend Status</h2>
+        <p>{message}</p>
+      </section>
+
       </section>
     </div>
   )
